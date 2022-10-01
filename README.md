@@ -1,3 +1,3 @@
 # college_project
-college projects
+college projects/
 1.deep learning
