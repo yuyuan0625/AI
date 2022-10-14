@@ -151,6 +151,6 @@ def main():
     path = A_star(maze, start, end)
     print(path)
 
-
+ 
 if __name__ == '__main__':
     main()
