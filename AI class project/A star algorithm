@@ -1,1 +1,156 @@
+#define a node class for A*
+class Node():
+    def __init__(self, parent=None, position=None):
+        self.parent = parent
+        self.position = position
+        self.g_cost = 0
+        self.h_cost = 0
+        self.f_cost = 0
 
+    def __eq__(self, other):    #equal
+        return self.position == other.position
+
+#Returns a list of tuples as a path from start to end in maze
+def A_star(maze, start, end):
+    # Create start and end node (initialize)
+    start_node = Node(None, start)
+    start_node.g_cost = start_node.h_cost = start_node.fcost = 0
+    end_node = Node(None, end)
+    end_node.g_cost = end_node.h_cost = end_node.fcost = 0
+
+    # Initialize both open and closed list
+    open_list = []
+    closed_list = []
+
+    # 將start 加入visited_list
+    open_list.append(start_node)
+
+    # Loop until you find the end
+    while len(open_list) > 0:   #當還有點可以找
+
+        # Get the current node
+        current_node = open_list[0]
+        current_index = 0
+        #每次皆用f()值最小之node當current node
+        for index, item in enumerate(open_list):
+            if item.f_cost < current_node.f_cost:
+                current_node = item
+                current_index = index
+
+        # Pop current off open list, add to closed list
+        open_list.pop(current_index)
+        closed_list.append(current_node)
+
+        # 走到end
+        if current_node == end_node:
+            path = []
+            current = current_node
+            #trace the path
+            while current is not None:
+                path.append(current.position)
+                current = current.parent
+            return path[::-1] # Return reversed path
+
+        # Generate children(move vertically/horizontally)
+        children_vh = []   
+        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]: # Adjacent squares
+
+            # 新位置 = 目前位置 + 方向
+            node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
+
+            # 確認在邊界之內
+            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
+                continue
+
+            # 確認非障礙物 (not an obstacle)
+            if maze[node_position[0]][node_position[1]] != 0:
+                continue
+
+            # Create new node
+            new_node = Node(current_node, node_position)
+
+            # 加入
+            children_vh.append(new_node)
+
+        # Loop through children(move vertically/horizontally)
+        for child_vh in children_vh:
+
+            # Child is on the closed list
+            for closed_child in closed_list:
+                if child_vh == closed_child:
+                    continue
+
+            # Create the f_cost, g_cost, and h_cost values
+            child_vh.g_cost = current_node.g_cost + 1
+            child_vh.h_cost = (((child_vh.position[0] - end_node.position[0]) ** 2) + ((child_vh.position[1] - end_node.position[1]) ** 2))**0.5
+            child_vh.f_cost = child_vh.g_cost + child_vh.h_cost
+
+            # Child is already in the open list
+            for open_node in open_list:
+                if child_vh == open_node and child_vh.g_cost > open_node.g_cost:
+                    continue
+
+            # Add the child to the open list
+            open_list.append(child_vh)
+
+        # Generate children move diagonally
+        children_d = []   
+        for new_position in [(-1, -1), (-1, 1), (1, -1), (1, 1)]: # Adjacent squares
+
+            # 新位置 = 目前位置 + 方向
+            node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
+
+            # 確認在邊界之內
+            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
+                continue
+
+            # 確認非障礙物 (not an obstacle)
+            if maze[node_position[0]][node_position[1]] != 0:
+                continue
+
+            # Create new node
+            new_node = Node(current_node, node_position)
+
+            # 加入
+            children_d.append(new_node)
+
+        # Loop through children(move diagonally)
+        for child_d in children_d:
+
+            # Child is on the closed list
+            for closed_child in closed_list:
+                if child_d == closed_child:
+                    continue
+
+            # Create the f_cost, g_cost, and h_cost values
+            child_d.g_cost = current_node.g_cost + 1.4
+            child_d.h_cost = (((child_d.position[0] - end_node.position[0]) ** 2) + ((child_d.position[1] - end_node.position[1]) ** 2))**0.5
+            child_d.f_cost = child_d.g_cost + child_d.h_cost
+
+            # Child is already in the open list
+            for open_node in open_list:
+                if child_d == open_node and child_d.g_cost > open_node.g_cost:
+                    continue
+
+            # Add the child to the open list
+            open_list.append(child_d)
+
+
+def main():
+    #1:obstacle/ 0:can walk
+    maze = [[0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 1, 1],
+            [0, 0, 0, 0, 0, 0],
+            [1, 1, 1, 1, 0, 0],
+            [1, 0, 0, 0, 0, 1],
+            [0, 0, 0, 0, 0, 1]]
+    #(row,col)
+    start = (0, 0)
+    end = (5, 2)
+
+    path = A_star(maze, start, end)
+    print(path)
+
+
+if __name__ == '__main__':
+    main()
